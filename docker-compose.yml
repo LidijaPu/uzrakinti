@@ -1,0 +1,75 @@
+services:
+  mongo:
+    image: mongo:7
+    # Replica set (vieno mazgo) reikalingas multi-document transakcijoms
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports: ["27017:27017"]
+    volumes: ["mongo_data:/data/db"]
+    healthcheck:
+      # Inicijuoja replica set pirmą kartą, vėliau tik tikrina būseną
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) {
+        rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports: ["9200:9200"]
+    volumes: ["es_data:/usr/share/elasticsearch/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 10s
+      retries: 30
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      - CLICKHOUSE_DB=uzrakinti
+      - CLICKHOUSE_USER=app
+      - CLICKHOUSE_PASSWORD=app
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports: ["8123:8123"]
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    volumes: ["ch_data:/var/lib/clickhouse"]
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client -u app --password app -q 'SELECT 1'"]
+      interval: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      # Docker tinkle servisai pasiekiami pagal pavadinimą
+      - MONGO_URL=mongodb://mongo:27017/?directConnection=true
+      - REDIS_URL=redis://redis:6379/0
+      - ES_URL=http://elasticsearch:9200
+      - CH_HOST=clickhouse
+    ports: ["8000:8000"]
+    volumes: ["./backend:/app"]   # kodo pakeitimai matomi iškart (--reload)
+    depends_on:
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      elasticsearch: { condition: service_healthy }
+      clickhouse: { condition: service_healthy }
+
+volumes:
+  mongo_data:
+  es_data:
+  ch_data:
