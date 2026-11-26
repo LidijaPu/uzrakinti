@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .init_db import init_all
-from .routers import auth, bookings, health, leaderboards, reports, rooms, search
+from .routers import (auth, bookings, games, health, leaderboards, reports, rooms, search)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,6 +30,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in (health.router, auth.router, rooms.router, bookings.router,
-               search.router, leaderboards.router, reports.router):
+for router in (health.router, auth.router, rooms.router, bookings.router, games.router, search.router, leaderboards.router, reports.router):
     app.include_router(router)

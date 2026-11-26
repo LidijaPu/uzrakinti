@@ -3,6 +3,7 @@ from functools import lru_cache
 
 import clickhouse_connect
 import redis
+import redis.asyncio as aioredis
 from elasticsearch import Elasticsearch
 from pymongo import MongoClient
 
@@ -15,10 +16,16 @@ db = mongo_client[settings.mongo_db]
 # Redis – cache, sesijos, užraktai, rekordų lentelės (ZSET), Pub/Sub
 r = redis.Redis.from_url(settings.redis_url, decode_responses=True)
 
+
+def async_redis() -> aioredis.Redis:
+    """Asinchroninis Redis klientas WebSocket'ui (atskiras kiekvienam ryšiui)."""
+    return aioredis.from_url(settings.redis_url, decode_responses=True)
+
 # ElasticSearch – pilno teksto paieška
 es = Elasticsearch(settings.es_url)
 
 ROOMS_INDEX = "rooms"
+
 
 
 @lru_cache
