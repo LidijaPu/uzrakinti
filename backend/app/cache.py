@@ -10,7 +10,8 @@ def cached(key: str, ttl: int, compute: Callable[[], Any]) -> Any:
     if hit is not None:
         return json.loads(hit)
     value = compute()
-    r.set(key, json.dumps(value, default=str), ex=ttl)
+    if value is not None:  # „nerasta“ necache'uojam – kitaip naujas įrašas būtų nematomas iki TTL pabaigos
+        r.set(key, json.dumps(value, default=str), ex=ttl)
     return value
 
 

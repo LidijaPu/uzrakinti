@@ -180,7 +180,8 @@ ROOMS_MAPPING = {
         "description": {"type": "text", "analyzer": "lithuanian"},
         "slug": {"type": "keyword"},
         "theme": {"type": "keyword"},
-        "tags": {"type": "keyword"},
+        # text, kad paieška su klaida rastų žymas; .raw – tiksliam filtrui
+        "tags": {"type": "text", "analyzer": "lithuanian", "fields": {"raw": {"type": "keyword"}}},
         "city": {"type": "keyword"},
         "locationName": {"type": "keyword"},
         "difficulty": {"type": "integer"},
