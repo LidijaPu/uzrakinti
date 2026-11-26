@@ -19,7 +19,18 @@ docker compose exec backend python -m seed.seed   # testiniai duomenys (~1–2 m
 - ReDoc: http://localhost:8000/redoc
 - Sveikatos patikra: http://localhost:8000/health
 
-Demo vartotojai (slaptažodis `demo123`): `admin@uzrakinti.lt`, `gm@uzrakinti.lt`, `zaidejas@uzrakinti.lt`.
+Demo vartotojai (slaptažodis `demo123`):
+
+| El. paštas | Rolė |
+|---|---|
+| `admin@uzrakinti.lt` | administratorius |
+| `vadovas@uzrakinti.lt` | filialo vadovas (ataskaitos) |
+| `gm@uzrakinti.lt` | žaidimo vedėjas |
+| `zaidejas@uzrakinti.lt` | žaidėja, komandos „Demo komanda“ kapitonė |
+| `draugas@uzrakinti.lt` | žaidėjas, „Demo komandos“ narys |
+
+Seed sukuria šiandienos „Demo komandos“ rezervaciją „Siaubo ligoninei“ – vedėjas gali iškart pradėti žaidimą.
+Kambario ekranas: `http://localhost:8000/screen/<roomId>`. Nuolaidų kodai: `RUDUO20`, `STUDENTAS`; dovanų kuponas: `DOVANA-2026`.
 
 ### Prisijungimas prie DB klientais
 | DB | Adresas | Klientas |

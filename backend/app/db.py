@@ -27,6 +27,11 @@ es = Elasticsearch(settings.es_url)
 ROOMS_INDEX = "rooms"
 
 
+def run_transaction(fn):
+    """fn(session) vykdoma MongoDB transakcijoje (su automatiniu kartojimu)."""
+    with mongo_client.start_session() as session:
+        return session.with_transaction(fn)
+
 
 @lru_cache
 def ch():
